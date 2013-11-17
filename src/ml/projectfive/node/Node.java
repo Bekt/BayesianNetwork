@@ -1,4 +1,4 @@
-package ml.projectfive;
+package ml.projectfive.node;
 
 public abstract class Node {
 

@@ -1,11 +1,13 @@
-package ml.projectfive;
+package ml.projectfive.node;
 
 import java.util.List;
+import static helpers.MathUtility.inverseGammaPdf;
 
 public class InverseGamma extends Continuous {
 
     public InverseGamma(double value) {
         super(value);
+        setDimensions(2);
     }
 
     @Override
@@ -14,10 +16,7 @@ public class InverseGamma extends Continuous {
         List<Node> distribution = getParameters().get(row);
         double shape = distribution.get(0).getCurrentVal();
         double scale = distribution.get(1).getCurrentVal();
-
-        // TODO: return inverseGammaPdf(val, shape, scale);
-
-        throw new UnsupportedOperationException("Not implemented");
+        return inverseGammaPdf(val, shape, scale);
     }
 
 }
