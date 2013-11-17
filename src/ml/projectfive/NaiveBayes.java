@@ -25,7 +25,8 @@ public class NaiveBayes extends SupervisedLearner {
         this.labels = labels;
         this.children = new ArrayList<Variable>();
 
-        if (!labels.isCategorical(0) || labels.getColumnAttributes(0).size() == 0) {
+        if (!labels.isCategorical(0)
+                || labels.getColumnAttributes(0).size() == 0) {
             throw new MLException("Only categorical labels are supported.");
         }
 

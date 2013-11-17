@@ -14,9 +14,9 @@ public class InverseGamma extends Continuous {
     public double conditional_probability(double val) {
         int row = checkParents();
         List<Node> distribution = getParameters().get(row);
-        double shape = distribution.get(0).getCurrentVal();
-        double scale = distribution.get(1).getCurrentVal();
-        return inverseGammaPdf(val, shape, scale);
+        double alpha = distribution.get(0).getCurrentVal();
+        double beta = distribution.get(1).getCurrentVal();
+        return inverseGammaPdf(val, alpha, beta);
     }
 
 }

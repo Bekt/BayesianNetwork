@@ -1,5 +1,3 @@
-package ml.projectfive;
-
 import ml.projectfive.node.Categorical;
 import ml.projectfive.node.Node;
 
