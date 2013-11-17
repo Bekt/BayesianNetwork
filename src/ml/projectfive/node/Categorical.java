@@ -41,10 +41,6 @@ public class Categorical extends Variable {
         setCurrentVal(labelValues.get(val));
     }
 
-    public double getLabelValue(int i) {
-        return labelValues.get(i);
-    }
-
     public void addLabelValue(double value) {
         labelValues.add(value);
     }

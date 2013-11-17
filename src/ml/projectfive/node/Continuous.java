@@ -9,6 +9,9 @@ public abstract class Continuous extends Variable {
         super(value);
     }
 
+    /**
+     * Metropolis sampling
+     */
     @Override
     public void sample() {
         double mu = getCurrentVal();

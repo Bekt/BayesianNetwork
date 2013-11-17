@@ -8,7 +8,7 @@ import java.util.List;
 public abstract class Variable extends Node {
 
     private List<Variable> children = new ArrayList<Variable>();
-    private List<Categorical> catParents = new ArrayList<Categorical>();
+    private List<Categorical> parents = new ArrayList<Categorical>();
     private List<List<Node>> parameters = new ArrayList<List<Node>>();
     private int dimensions;
 
@@ -24,8 +24,8 @@ public abstract class Variable extends Node {
         return children;
     }
 
-    public List<Categorical> getCatParents() {
-        return catParents;
+    public List<Categorical> getParents() {
+        return parents;
     }
 
     public List<List<Node>> getParameters() {
@@ -36,11 +36,15 @@ public abstract class Variable extends Node {
         children.add(child);
     }
 
+    protected void setDimensions(int dimensions) {
+        this.dimensions = dimensions;
+    }
+
     public void addCatParent(Categorical parent) {
         if (parent.numValues() == 0) {
             throw new MLException("Categorical parent does not have any possible values.");
         }
-        catParents.add(parent);
+        parents.add(parent);
     }
 
     public void buildTable() {
@@ -48,28 +52,24 @@ public abstract class Variable extends Node {
         resizeTable(rows, dimensions);
     }
 
-    protected void setDimensions(int dimensions) {
-        this.dimensions = dimensions;
-    }
-
     protected int checkParents() {
         int v = 0, m = 1;
-        for (Categorical parent : catParents) {
+        for (Categorical parent : parents) {
             v += (m * parent.getCurrentVal());
             m *= parent.getCurrentVal();
         }
         return v;
     }
 
-    protected int getNumPermutations() {
+    private int getNumPermutations() {
         int m = 1;
-        for (Categorical parent : getCatParents()) {
+        for (Categorical parent : getParents()) {
             m *= parent.numValues();
         }
         return m;
     }
 
-    protected void resizeTable(int m, int k) {
+    private void resizeTable(int m, int k) {
         parameters.clear();
         for (int i = 0; i < m; i++) {
             List<Node> row = new ArrayList<Node>();

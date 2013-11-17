@@ -7,9 +7,4 @@ public class Constant extends Node {
         setObserved(true);
     }
 
-    @Override
-    public boolean isObserved() {
-        return true;
-    }
-
 }

@@ -13,52 +13,84 @@ import static java.lang.Math.sqrt;
  */
 public class NaiveBayes extends SupervisedLearner {
 
+    private static final int BURN_INS = 100;
+
     private Matrix features, labels;
     private Categorical parent;
-    private List<Variable> children = new ArrayList<Variable>();
+    private List<Variable> children;
 
     @Override
     public void train(Matrix features, Matrix labels) {
         this.features = features;
         this.labels = labels;
-        this.children.clear();
-        int rows = features.getNumRows();
+        this.children = new ArrayList<Variable>();
 
         if (!labels.isCategorical(0) || labels.getColumnAttributes(0).size() == 0) {
             throw new MLException("Only categorical labels are supported.");
         }
 
+        buildNetwork();
+        calculateLabelWeights();
+        calculateFeatureWeights();
+    }
+
+    @Override
+    public List<Double> predict(List<Double> in) {
+        for (int j = 0; j < children.size(); j++) {
+            children.get(j).setCurrentVal(in.get(j));
+        }
+
+        int[] count = new int[parent.numValues()];
+        for (int i = 0; i < BURN_INS; i++) {
+            parent.sample();
+            count[(int) parent.getCurrentVal()]++;
+        }
+
+        int ind = 0, max = 0;
+        for (int i = 0; i < count.length; i++) {
+            if (count[i] > max) {
+                max = count[i];
+                ind = i;
+            }
+        }
+
+        List<Double> out = new ArrayList<Double>();
+        out.add((double) ind);
+        return out;
+    }
+
+    private void buildNetwork() {
         int possibleValues = labels.getColumnAttributes(0).size();
-        Categorical parent = new Categorical(0, possibleValues);
-        this.parent = parent;
+        parent = new Categorical(0, possibleValues);
 
         for (int i = 0; i < possibleValues; i++) {
             parent.addLabelValue(i);
         }
-
         for (int i = 0; i < features.getNumCols(); i++) {
             Normal child = new Normal(0);
             parent.addChild(child);
             child.addCatParent(parent);
-            this.children.add(child);
+            children.add(child);
         }
 
         parent.buildTable();
-
         for (Variable child : parent.getChildren()) {
             child.buildTable();
         }
+    }
 
-        // Label weights
+    private void calculateLabelWeights() {
+        int rows = labels.getNumRows();
         int[] labelFrequency = calculateLabelFrequency(labels);
         List<Node> row = parent.getParameters().get(0);
         for (int i = 0; i < row.size(); i++) {
             double weight = (double) labelFrequency[i] / rows;
             row.get(i).setCurrentVal(weight);
         }
+    }
 
-        // Features weights
-        List<Variable> children = parent.getChildren();
+    private void calculateFeatureWeights() {
+        int rows = labels.getNumRows();
         for (int i = 0; i < children.size(); i++) {
             Normal child = (Normal) children.get(i);
             List<List<Node>> table = child.getParameters();
@@ -86,41 +118,6 @@ public class NaiveBayes extends SupervisedLearner {
         }
     }
 
-    @Override
-    public List<Double> predict(List<Double> in) {
-        final int burnIns = 1000;
-
-        for (int j = 0; j < children.size(); j++) {
-            children.get(j).setCurrentVal(in.get(j));
-        }
-
-        int[] res = new int[3];
-        for (int i = 0; i < burnIns; i++) {
-            parent.sample();
-            res[(int) parent.getCurrentVal()]++;
-        }
-
-        int ind = -1;
-        double max = 0;
-
-        if (res[0] > max) {
-            max = res[0];
-            ind = 0;
-        }
-        if (res[1] > max) {
-            max = res[1];
-            ind = 1;
-        }
-        if (res[2] > max) {
-            ind = 2;
-        }
-
-        List<Double> out = new ArrayList<Double>();
-        out.add((double) ind);
-
-        return out;
-    }
-
     private int[] calculateLabelFrequency(Matrix labels) {
         int col = 0, size = labels.getColumnAttributes(col).size();
         int[] weights = new int[size];
@@ -130,27 +127,6 @@ public class NaiveBayes extends SupervisedLearner {
             weights[value]++;
         }
         return weights;
-    }
-
-    private void testTables(Categorical parent) {
-        System.out.println("Parent parameters:");
-        printTable(parent);
-
-        System.out.println("Children parameters:");
-        for (Variable child : parent.getChildren()) {
-            printTable(child);
-            System.out.println();
-        }
-    }
-
-    private void printTable(Variable node) {
-        List<List<Node>> table = node.getParameters();
-        for (List<Node> row : table) {
-            for (Node cell : row) {
-                System.out.print(cell.getCurrentVal() + " ");
-            }
-            System.out.println();
-        }
     }
 
 }

@@ -25,7 +25,7 @@ public class Main {
         NaiveBayes learner = new NaiveBayes();
         double mse = learner.repeatNFoldCrossValidation(features, labels, nFoldSize, repetitions);
 
-        System.out.println(mse);
+        System.out.printf("%.4f", mse);
     }
 
 }
