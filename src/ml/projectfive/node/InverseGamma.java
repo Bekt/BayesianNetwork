@@ -12,6 +12,9 @@ public class InverseGamma extends Continuous {
 
     @Override
     public double conditional_probability(double val) {
+        if (val < 0) {
+            return 0;
+        }
         int row = checkParents();
         List<Node> distribution = getParameters().get(row);
         double alpha = distribution.get(0).getCurrentVal();

@@ -1,3 +1,4 @@
+import ml.projectfive.node.InverseGamma;
 import ml.projectfive.node.Normal;
 import ml.projectfive.node.Variable;
 import java.util.ArrayList;
@@ -21,10 +22,11 @@ public class MetropolisTest {
 
         testThree(parent, child);
 
+        testFour();
     }
 
     /**
-     * Mean should be ~7.0, and sttdev should be ~3.0
+     * Mean should be ~7.0, and variance should be ~3.0
      */
     static void testOne(Normal node) {
         final int n = 100000;
@@ -53,7 +55,7 @@ public class MetropolisTest {
     }
 
     /**
-     * Mean should be ~7.0, and sttdev should be ~3.0
+     * Mean should be ~7.0, and variance should be ~3.0
      */
     static void testTwo(Variable parent, Variable child) {
         final int n = 100000;
@@ -84,7 +86,7 @@ public class MetropolisTest {
     }
 
     /**
-     * Mean should be ~13.75, and sttdev should be ~0.75
+     * Mean should be ~13.75, and variance should be ~0.75
      */
     static void testThree(Variable parent, Variable child) {
         final int n = 100000;
@@ -98,6 +100,46 @@ public class MetropolisTest {
         for (int i = 0; i < n; i++) {
             parent.sample();
             samples.add(parent.getCurrentVal());
+        }
+        double mean = sum(samples) / n;
+        double diffSum = 0;
+
+        for (double d : samples) {
+            double val = d - mean;
+            diffSum += (val * val);
+        }
+
+        System.out.println("mean: " + mean);
+        System.out.println("variance: " + diffSum / (n - 1));
+        System.out.println();
+    }
+
+    /**
+     * Mean should be ~15.5, and variance should be ~1.0
+     */
+    static void testFour() {
+        final int n = 100000;
+
+        InverseGamma ig = new InverseGamma(1);
+        ig.buildTable();
+
+        ig.getParameters().get(0).get(0).setCurrentVal(7);
+        ig.getParameters().get(0).get(1).setCurrentVal(3);
+
+        Normal child = new Normal(16);
+        ig.addChild(child);
+        child.buildTable();
+
+        child.getParameters().get(0).set(0, ig);
+        child.getParameters().get(0).get(1).setCurrentVal(1);
+
+        List<Double> samples = new ArrayList<Double>();
+        for (int i = 0; i < n; i++) {
+            ig.sample();
+        }
+        for (int i = 0; i < n; i++) {
+            ig.sample();
+            samples.add(ig.getCurrentVal());
         }
         double mean = sum(samples) / n;
         double diffSum = 0;
