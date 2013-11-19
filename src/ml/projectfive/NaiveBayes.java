@@ -1,9 +1,12 @@
 package ml.projectfive;
 
+import ml.ARFFParser;
 import ml.MLException;
 import ml.Matrix;
 import ml.SupervisedLearner;
 import ml.projectfive.node.*;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import static java.lang.Math.sqrt;
@@ -13,11 +16,30 @@ import static java.lang.Math.sqrt;
  */
 public class NaiveBayes extends SupervisedLearner {
 
+    private static final int nFoldSize = 2;
+    private static final int repetitions = 5;
     private static final int BURN_INS = 100;
 
     private Matrix features, labels;
     private Categorical parent;
     private List<Variable> children;
+
+    public static void main(String[] args) throws IOException {
+
+        if (args.length == 0) {
+            throw new MLException("No data set given.");
+        }
+
+        Matrix matrix = ARFFParser.loadARFF(args[0]);
+        int cols = matrix.getNumCols();
+        Matrix features = matrix.subMatrixCols(0, cols - 1);
+        Matrix labels = matrix.subMatrixCols(cols - 1, cols);
+
+        NaiveBayes learner = new NaiveBayes();
+        double mse = learner.repeatNFoldCrossValidation(features, labels, nFoldSize, repetitions);
+
+        System.out.printf("%.4f", mse);
+    }
 
     @Override
     public void train(Matrix features, Matrix labels) {
